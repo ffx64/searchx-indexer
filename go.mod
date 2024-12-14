@@ -1,5 +1,5 @@
 module github.com/sentielxx/xlog-process
 
-go 1.23.1
+go 1.23.4
 
-require github.com/mattn/go-sqlite3 v1.14.24
+require github.com/lib/pq v1.10.9 // indirect

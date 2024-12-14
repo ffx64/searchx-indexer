@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/sentielxx/xlog-process/database"
-	"github.com/sentielxx/xlog-process/process"
+	"github.com/sentielxx/xlog-process/internal/db"
+	"github.com/sentielxx/xlog-process/internal/process"
 	"github.com/sentielxx/xlog-process/runner"
 )
 
@@ -14,6 +15,51 @@ func init() {
 	runner.Banner()
 }
 
+func main() {
+	database := flag.String("database", "127.0.0.1", "")
+	databaseName := flag.String("database-name", "xlog", "")
+	databasePort := flag.String("database-port", "5432", "")
+	databaseUser := flag.String("database-user", "postgres", "")
+	databasePass := flag.String("database-pass", "postgres", "")
+	file := flag.String("file", "", "path to the log file.")
+	description := flag.String("description", "not information", "optional description for the logins.")
+	source := flag.String("source", "not information", "source dataleak")
+
+	flag.Parse()
+
+	if *file == "" {
+		print("[!] you did not provide the path to the log file, use the '-file' flag.")
+	}
+
+	if _, err := os.Stat(*file); os.IsNotExist(err) {
+		fmt.Printf("[!] the log file '%s' was not found.\n", *file)
+		os.Exit(1)
+	}
+
+	databaseNew := db.Database{
+		Host:     *database,
+		Port:     *databasePort,
+		Username: *databaseUser,
+		Password: *databasePass,
+		DBName:   *databaseName,
+	}
+
+	databaseCursor, err := databaseNew.NewConnection()
+	if err != nil {
+		fmt.Printf("[!] the log file '%s' was not found.\n", *file)
+		os.Exit(1)
+	}
+	defer databaseCursor.CloseConnection()
+
+	err = process.StealerLogsProcessData(databaseCursor, *file, *description, *source)
+
+	if err != nil {
+		log.Printf("[!] process file error: %e", err)
+		os.Exit(1)
+	}
+}
+
+/*
 func main() {
 	file := flag.String("file", "", "path to the log file.")
 	databaseFile := flag.String("database", "database/xlog.db", "path to the sqlite database.")
@@ -64,3 +110,4 @@ func main() {
 	println("[+] total lines processed:", linesprocessed)
 	println("[+] processing completed successfully!")
 }
+*/
