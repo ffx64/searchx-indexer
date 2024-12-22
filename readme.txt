@@ -38,7 +38,7 @@ storage processes run smoothly, with detailed logs for auditing and debugging.
                                   Prerequisites
 -----------------------------------------------------------------------------------
 
-- Go 1.18 or higher.
+- Go 1.23 or higher.
 - PostgreSQL database.
 - Network access to integrate with other **SearchX** modules.
 
