@@ -1,0 +1,10 @@
+database:
+  host: "localhost"             # Address of the PostgreSQL server
+  port: 5432                    # Port of PostgreSQL (default is 5432)
+  username: "your_username"     # PostgreSQL username
+  password: "your_password"     # Password for the PostgreSQL user
+  dbname:   "your_database"     # The name of the database to connect to
+  sslmode:  "prefer"            # SSL mode, can be: disable, require, verify-ca, verify-full
+  max_connections: 100          # Maximum number of simultaneous connections
+  timeout: 30                   # Connection timeout in seconds
+
