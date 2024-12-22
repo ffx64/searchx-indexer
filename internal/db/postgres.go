@@ -8,99 +8,72 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func (d *Database) NewConnection() (*Database, error) {
-	defaultConfig(d)
+// database represents a connection to a PostgreSQL database.
+type Database struct {
+	host     string
+	port     int32
+	username string
+	password string
+	database string
+	sslmode  string
+	cursor   *sql.DB
+}
 
-	conn, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", d.Host, d.Port, d.Username, d.Password, d.DBName, d.SSL))
+// NewDatabase creates and returns a new Database instance with the provided connection parameters.
+// The default SSL mode is set to "disable".
+//
+// Parameters:
+// - host: The host where the database is located (e.g., "localhost").
+// - port: The port on which the database is listening (e.g., "5432").
+// - username: The username used to authenticate with the database.
+// - password: The password associated with the username.
+// - db: The name of the database to connect to.
+//
+// Returns:
+// - *Database: A pointer to the newly created Database instance.
+// - The function sets the default SSL mode to "disable" and configures the connection.
+func NewDatabase(port int32, host, username, password, db, sslmode string) *Database {
+	model := new(Database)
+
+	model.host = host
+	model.port = port
+	model.username = username
+	model.password = password
+	model.database = db
+
+	return model
+}
+
+// Connect establishes a connection to the PostgreSQL database and stores the connection
+// in the cursor field. Returns the instance of the Database struct and any error encountered.
+//
+// Returns:
+// - *Database: The Database instance with an open database connection.
+// - error: An error object if the connection fails, otherwise nil.
+func (d *Database) Connect() (*Database, error) {
+	conn, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", d.host, d.port, d.username, d.password, d.database, d.sslmode))
 	if err != nil {
-		return nil, fmt.Errorf("[!] error connecting to the database: %v", err)
+		return nil, fmt.Errorf("error connecting to the database: %v", err)
+	}
+
+	if err := conn.Ping(); err != nil {
+		return nil, fmt.Errorf("failed to ping the database: %w", err)
 	}
 
 	d.cursor = conn
-	log.Println("[+] database connected successfully!")
+
+	log.Println("database connected")
+
 	return d, nil
 }
 
-func (d *Database) CloseConnection() error {
-	return d.cursor.Close()
-}
-
-func (d *Database) FileLogExists(fileHash string, fileName string) (bool, error) {
-	var exists bool
-	query := `
-		SELECT EXISTS (
-			SELECT 1
-			FROM file_logs
-			WHERE file_hash = $1 OR file_name = $2
-		)
-	`
-	err := d.cursor.QueryRow(query, fileHash, fileName).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("error checking if file log exists: %v", err)
+// Close closes the connection to the database. It returns an error if the closing fails.
+//
+// Returns:
+// - error: Returns nil if the connection is closed successfully, otherwise an error.
+func (d *Database) Close() error {
+	if d.cursor != nil {
+		return d.cursor.Close()
 	}
-	return exists, nil
-}
-
-func (d *Database) InsertStealerFile(file StealerFileLogModel) (int64, error) {
-	exists, err := d.FileLogExists(file.FileHash, file.FileName)
-	if err != nil {
-		return 0, err
-	}
-	if exists {
-		log.Println("[+] file log already exists, skipping insert.")
-		return 0, nil
-	}
-
-	query := `
-		INSERT INTO file_logs (file_name, file_size, file_hash, status, source, file_type, file_description, processed_entries_count, created_at, processed_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-		RETURNING id
-	`
-
-	var fileLogID int64
-	err = d.cursor.QueryRow(query, file.FileName, file.FileSize, file.FileHash, file.Status, file.Source, file.FileType, file.FileDescription, file.ProcessedEntriesCount, file.CreatedAt, file.ProcessedAt).Scan(&fileLogID)
-	if err != nil {
-		return 0, fmt.Errorf("error inserting file log: %v", err)
-	}
-
-	return fileLogID, nil
-}
-
-func (d *Database) LogEntryExists(fileLogID int64, url string, username string, password string) (bool, error) {
-	var exists bool
-	query := `
-		SELECT EXISTS (
-			SELECT 1
-			FROM log_entries
-			WHERE file_log_id = $1 AND url = $2 AND username = $3 AND password = $4
-		)
-	`
-	err := d.cursor.QueryRow(query, fileLogID, url, username, password).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("error checking if log entry exists: %v", err)
-	}
-	return exists, nil
-}
-
-func (d *Database) InsertStealerEntrie(entry StealerEntrieLogModel, fileID int64) error {
-	exists, err := d.LogEntryExists(fileID, entry.URL, entry.Username, entry.Password)
-	if err != nil {
-		return err
-	}
-
-	if exists {
-		return fmt.Errorf("log entry already exists, skipping insert.")
-	}
-
-	query := `
-		INSERT INTO log_entries (file_log_id, url, username, password, created_at, processed_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`
-
-	_, err = d.cursor.Exec(query, fileID, entry.URL, entry.Username, entry.Password, entry.CreatedAt, entry.ProcessedAt)
-	if err != nil {
-		return fmt.Errorf("error inserting log entry: %v", err)
-	}
-
-	return nil
+	return fmt.Errorf("no active database connection to close")
 }
