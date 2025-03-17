@@ -1,4 +1,4 @@
-package db
+package dabatase
 
 import (
 	"database/sql"
@@ -32,16 +32,8 @@ type Database struct {
 // Returns:
 // - *Database: A pointer to the newly created Database instance.
 // - The function sets the default SSL mode to "disable" and configures the connection.
-func NewDatabase(port int32, host, username, password, db, sslmode string) *Database {
-	model := new(Database)
-
-	model.host = host
-	model.port = port
-	model.username = username
-	model.password = password
-	model.database = db
-
-	return model
+func NewDatabase(port int32, host, username, password, db string) *Database {
+	return &Database{host: host, port: port, username: username, password: password, database: db}
 }
 
 // Connect establishes a connection to the PostgreSQL database and stores the connection
@@ -53,16 +45,16 @@ func NewDatabase(port int32, host, username, password, db, sslmode string) *Data
 func (d *Database) Connect() (*Database, error) {
 	conn, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", d.host, d.port, d.username, d.password, d.database, d.sslmode))
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to the database: %v", err)
+		return nil, fmt.Errorf("[!] error connecting to the database: %v", err)
 	}
 
 	if err := conn.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping the database: %w", err)
+		return nil, fmt.Errorf("[!] failed to ping the database: %w", err)
 	}
 
 	d.cursor = conn
 
-	log.Println("database connected")
+	log.Println("[+] database connected!")
 
 	return d, nil
 }
@@ -75,5 +67,5 @@ func (d *Database) Close() error {
 	if d.cursor != nil {
 		return d.cursor.Close()
 	}
-	return fmt.Errorf("no active database connection to close")
+	return fmt.Errorf("[!] no active database connection to close")
 }
