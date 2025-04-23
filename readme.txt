@@ -46,8 +46,8 @@ storage processes run smoothly, with detailed logs for auditing and debugging.
                                      Build
 -----------------------------------------------------------------------------------
 
-mkdir -p $HOME/go/src/github.com/sentielx/ \
-&& git clone https://github.com/sentielxx/searchx-indexer \ 
-$HOME/go/src/github.com/sentielx/searchx-indexer \
-&& cd $HOME/go/src/github.com/sentielx/searchx-indexer \
+mkdir -p $HOME/go/src/github.com/0x53bin/ \
+&& git clone https://github.com/0x53binx/searchx-indexer \ 
+$HOME/go/src/github.com/0x53bin/searchx-indexer \
+&& cd $HOME/go/src/github.com/0x53bin/searchx-indexer \
 && go build cmd/main.go -o searchx-indexer
