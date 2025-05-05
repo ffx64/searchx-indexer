@@ -46,8 +46,8 @@ storage processes run smoothly, with detailed logs for auditing and debugging.
                                      Build
 -----------------------------------------------------------------------------------
 
-mkdir -p $HOME/go/src/github.com/0x53bin/ \
-&& git clone https://github.com/0x53binx/searchx-indexer \ 
-$HOME/go/src/github.com/0x53bin/searchx-indexer \
-&& cd $HOME/go/src/github.com/0x53bin/searchx-indexer \
+mkdir -p $HOME/go/src/github.com/ffx64/ \
+&& git clone https://github.com/ffx64/searchx-indexer \ 
+$HOME/go/src/github.com/ffx64/searchx-indexer \
+&& cd $HOME/go/src/github.com/ffx64/searchx-indexer \
 && go build cmd/main.go -o searchx-indexer
