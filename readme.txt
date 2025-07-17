@@ -15,6 +15,10 @@ With **SearchX Indexer**, you can ensure that sensitive leak data is processed,
 organized and saved in an optimized way, allowing easy integration with other
 modules of the **SearchX** project.
 
+This project is intended solely for educational purposes. Use for any illegal or
+unauthorized activities is strictly prohibited. Please use it responsibly and
+ethically.
+
 -----------------------------------------------------------------------------------
                                     Features
 -----------------------------------------------------------------------------------
