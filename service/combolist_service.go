@@ -9,17 +9,17 @@ import (
 	"github.com/google/uuid"
 )
 
-type ComboListService struct {
-	ComboRepo *repository.ComboListRepository
-	AgentRepo *repository.AgentRepository
+type CombolistService struct {
+	CombolistRepository *repository.ComboListRepository
+	AgentRepository     *repository.AgentRepository
 }
 
-func NewComboListService(combo *repository.ComboListRepository, agent *repository.AgentRepository) *ComboListService {
-	return &ComboListService{ComboRepo: combo, AgentRepo: agent}
+func NewComboListService(combo *repository.ComboListRepository, agent *repository.AgentRepository) *CombolistService {
+	return &CombolistService{CombolistRepository: combo, AgentRepository: agent}
 }
 
-func (s *ComboListService) BulkInsert(hash string, meta entity.ComboListMetadataEntity, data []entity.ComboListDataEntity) error {
-	existing, err := s.ComboRepo.FindMetadataByHash(hash)
+func (s *CombolistService) BulkInsert(hash string, meta entity.CombolistMetadataEntity, data []entity.CombolistDataEntity) error {
+	existing, err := s.CombolistRepository.FindMetadataByHash(hash)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (s *ComboListService) BulkInsert(hash string, meta entity.ComboListMetadata
 			meta.CollectedAt = time.Now()
 		}
 		meta.Hash = hash
-		metadataID, err = s.ComboRepo.InsertMetadata(&meta)
+		metadataID, err = s.CombolistRepository.InsertMetadata(&meta)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func (s *ComboListService) BulkInsert(hash string, meta entity.ComboListMetadata
 	for i, d := range data {
 		d.MetadataID = metadataID
 
-		err = s.ComboRepo.InsertData(d)
+		err = s.CombolistRepository.InsertData(d)
 
 		if err != nil {
 			return err

@@ -7,7 +7,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type ComboListMetadataEntity struct {
+type CombolistMetadataEntity struct {
 	ID          uuid.UUID      `db:"uuid"`
 	Source      string         `db:"source"`
 	CollectedAt time.Time      `db:"collected_at"`

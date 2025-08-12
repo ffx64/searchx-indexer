@@ -2,7 +2,7 @@ package entity
 
 import "github.com/google/uuid"
 
-type ComboListDataEntity struct {
+type CombolistDataEntity struct {
 	ID         uuid.UUID `db:"uuid"`
 	Email      string    `db:"email"`
 	Password   string    `db:"password"`

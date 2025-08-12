@@ -6,49 +6,34 @@ import (
 	"log"
 	"net/http"
 	"searchx-indexer/entity"
+	"searchx-indexer/security"
 	"searchx-indexer/service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type ComboListController struct {
-	Service *service.ComboListService
+	Service *service.CombolistService
 }
 
 type BulkUploadRequest struct {
 	Hash     string                         `json:"hash"`
-	Metadata entity.ComboListMetadataEntity `json:"metadata"`
-	Data     []entity.ComboListDataEntity   `json:"data"`
+	Metadata entity.CombolistMetadataEntity `json:"metadata"`
+	Data     []entity.CombolistDataEntity   `json:"data"`
 }
 
-func NewComboListController(svc *service.ComboListService) *ComboListController {
+func NewComboListController(svc *service.CombolistService) *ComboListController {
 	return &ComboListController{Service: svc}
 }
 
 func (c *ComboListController) BulkUpload(ctx *gin.Context) {
-	authKey := ctx.GetHeader("authorization")
-	if authKey == "" {
-		log.Println("[combolist] not authorization")
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "not authorization"})
-		return
-	}
+	authkey := ctx.GetHeader("authorization")
 
-	agent, err := c.Service.AgentRepo.FindByAuthKey(authKey)
+	_, err := security.AuthAgent(c.Service.AgentRepository, authkey, "combolist")
 	if err != nil {
-		log.Println("[combolist] failed to find agent with provided authorization:", err)
+		log.Println("[combolist]", err.Error())
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "not authorization"})
 		return
-	}
-
-	if agent.AgentStatus != "active" {
-		log.Println("[combolist] agent is not active")
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "not authorization"})
-		return
-	}
-
-	if agent.Platform != "combolist" {
-		log.Println("[combolist] not found platform to agent")
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "not authorization"})
 	}
 
 	body, err := io.ReadAll(ctx.Request.Body)
@@ -66,7 +51,7 @@ func (c *ComboListController) BulkUpload(ctx *gin.Context) {
 	}
 
 	ip := ctx.ClientIP()
-	if err := c.Service.AgentRepo.UpdateActivity(authKey, ip); err != nil {
+	if err := c.Service.AgentRepository.UpdateActivity(authkey, ip); err != nil {
 		log.Println("[combolist] failed to update agent activity")
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "not authorization"})
 		return
@@ -78,7 +63,7 @@ func (c *ComboListController) BulkUpload(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.Service.AgentRepo.IncrementDataProcessed(authKey, len(req.Data)); err != nil {
+	if err := c.Service.AgentRepository.IncrementDataProcessed(authkey, len(req.Data)); err != nil {
 		log.Println("[combolist] failed to increment data processed count")
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "not authorization"})
 		return

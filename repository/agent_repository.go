@@ -30,6 +30,16 @@ func (r *AgentRepository) FindByAuthKey(authKey string) (*entity.AgentEntity, er
 	return &a, nil
 }
 
+func (r *AgentRepository) UpdateStatus(authkey, status string) error {
+	_, err := r.DB.Exec(`
+		UPDATE agents
+		SET agent_status = $1
+		WHERE auth_key = $2
+	`, status, authkey)
+
+	return err
+}
+
 func (r *AgentRepository) UpdateActivity(authKey string, ip string) error {
 	_, err := r.DB.Exec(`
 		UPDATE agents

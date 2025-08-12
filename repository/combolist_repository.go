@@ -17,8 +17,8 @@ func NewComboListRepository(db *sql.DB) *ComboListRepository {
 	return &ComboListRepository{DB: db}
 }
 
-func (r *ComboListRepository) FindMetadataByHash(hash string) (*entity.ComboListMetadataEntity, error) {
-	var m entity.ComboListMetadataEntity
+func (r *ComboListRepository) FindMetadataByHash(hash string) (*entity.CombolistMetadataEntity, error) {
+	var m entity.CombolistMetadataEntity
 
 	err := r.DB.QueryRow(`
 		SELECT id, source, collected_at, tags, notes, hash FROM combolist_metadata WHERE hash = $1
@@ -31,7 +31,7 @@ func (r *ComboListRepository) FindMetadataByHash(hash string) (*entity.ComboList
 	return &m, err
 }
 
-func (r *ComboListRepository) InsertMetadata(meta *entity.ComboListMetadataEntity) (uuid.UUID, error) {
+func (r *ComboListRepository) InsertMetadata(meta *entity.CombolistMetadataEntity) (uuid.UUID, error) {
 	tx, err := r.DB.Begin()
 	if err != nil {
 		return uuid.UUID{}, err
@@ -61,7 +61,7 @@ func (r *ComboListRepository) InsertMetadata(meta *entity.ComboListMetadataEntit
 	return id, nil
 }
 
-func (r *ComboListRepository) InsertData(data entity.ComboListDataEntity) error {
+func (r *ComboListRepository) InsertData(data entity.CombolistDataEntity) error {
 	tx, err := r.DB.Begin()
 
 	if err != nil {
